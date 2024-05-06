@@ -1,0 +1,9 @@
+---
+- hosts: all
+  tasks:
+    - name: copy
+      copy:
+        src: "{{ item }}"
+        dest: "{{ dest_content }}"
+      with_fileglob:
+        - "{{ src_content }}"

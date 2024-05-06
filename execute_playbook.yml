@@ -1,0 +1,6 @@
+---
+- hosts: all
+  tasks:
+    - name: execute playbook
+      command: ansible-playbook "{{ playbook_path }}"
+      delegate_to: localhost

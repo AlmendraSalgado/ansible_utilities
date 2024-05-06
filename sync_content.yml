@@ -1,0 +1,19 @@
+---
+- hosts: all
+  tasks:
+    - name: install rsync
+      yum:
+        name: rsync
+        state: latest
+      become: true
+    - name: ensure dest content exists
+      file:
+        path: "{{ dest_content }}"
+        state: directory
+    - name: synchronize content
+      ansible.posix.synchronize:
+        mode: pull
+        src: "{{ src_content }}"
+        dest: "{{ dest_content }}"
+        rsync_opts: "{{ content_rsync_opts }}"
+      become: true

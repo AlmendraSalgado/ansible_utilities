@@ -1,0 +1,10 @@
+- name: Launch a workflow in Ansible Automation Platform
+  hosts: localhost
+
+  tasks:
+    - name: Launch a Workflow in Ansible Automation Platform with OAuth token authentication
+      awx.awx.workflow_launch:
+        workflow_template: "Configure new system provisioned with terraform"
+        validate_certs: false
+        controller_host: 'ec2-52-8-223-100.us-west-1.compute.amazonaws.com'
+        controller_oauthtoken: "{{ _oauth_token }}"
