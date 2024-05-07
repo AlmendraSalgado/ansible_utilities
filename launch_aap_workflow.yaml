@@ -1,6 +1,9 @@
 - name: Launch a workflow in Ansible Automation Platform
   hosts: localhost
 
+  vars:
+    _oauth_token: "{{ lookup('env', 'AWX_OAUTH_TOKEN') }}"
+
   tasks:
     - name: Launch a Workflow in Ansible Automation Platform with OAuth token authentication
       awx.awx.workflow_launch:
