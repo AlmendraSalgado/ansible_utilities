@@ -11,4 +11,4 @@
         validate_certs: false
         controller_host: 'ec2-52-8-223-100.us-west-1.compute.amazonaws.com'
         controller_oauthtoken: "{{ _oauth_token }}"
-        limit: "ec2-52-8-223-100.us-west-1.compute.amazonaws.com"
+        limit: "{{ _host_public_dns }}"
