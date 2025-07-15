@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    controller_role_user_assignment:
+      - user: almendra
+        job_templates_id: 11
+        role: JobTemplate Admin
+
+  tasks:
+    - name: Create user roles
+      ansible.controller.role_user_assignment: 
+        user: "{{ item.user }}"
+        role_definition: "{{ item.role }}"
+        object_id: "{{ item.job_templates_id }}"
+      loop: "{{ controller_role_user_assignment }}"
