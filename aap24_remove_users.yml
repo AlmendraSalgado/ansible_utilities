@@ -1,0 +1,23 @@
+---
+- name: Remove users from Ansible Automation Platform 2.4
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Load JSON data from file
+      ansible.builtin.set_fact:
+        user_data: "{{ lookup('file', 'user_list.json' ) | from_json }}"
+
+    - debug:
+        var: user_data
+
+    - name: Remove Users
+      awx.awx.user:
+        state: absent
+        username: "{{ item.username }}"
+        email: "{{ item.email }}"
+        validate_certs: false
+        controller_host: "{{ controller_host }}"
+        controller_password: "{{ controller_password }}"
+        controller_username: "{{ controller_username }}"
+      loop: "{{ user_data }}"
