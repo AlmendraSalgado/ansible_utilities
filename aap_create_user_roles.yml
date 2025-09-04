@@ -4,7 +4,7 @@
   vars:
     controller_role_user_assignment:
       - user: almendra
-        job_templates_id: 11
+        job_templates_id: 10
         role: JobTemplate Admin
 
   tasks:
