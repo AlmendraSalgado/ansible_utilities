@@ -59,6 +59,7 @@ def format_inventories(data):
     for inv in data:
         inventories.append({
             "name": inv.get("name"),
+            "copy_from": inv.get("copy_from") if "copy_from" in inv else None,
             "description": inv.get("description", ""),
             "kind": inv.get("kind"),
             "host_filter": inv.get("host_filter", ""),
@@ -76,6 +77,7 @@ def format_credentials(data):
         org = cred.get("organization") or {}
         cred_obj = {
             "name": cred.get("name", cred_type),
+            "copy_from": cred.get("copy_from") if "copy_from" in cred else None,
             "description": cred.get("description", "created by Ansible"),
             "organization": org.get("name", "Default"),
             "credential_type": cred_type,
@@ -206,6 +208,7 @@ def format_notifications(data):
     for notif in data:
         notif_obj = {
             "name": notif.get("name"),
+            "copy_from": notif.get("copy_from") if "copy_from" in notif else None,
             "description": notif.get("description"),
             "organization": notif.get("organization", {}).get("name", "Default"),
             "notification_type": notif.get("notification_type"),
@@ -301,9 +304,10 @@ def format_organizations(data):
             "instance_groups": org.get("instance_groups", []),
             "default_environment": (org.get("default_environment", "") or {}).get("name"),
             "galaxy_credentials": [],
-            "notification_templates_started": org.get("notification_templates_started", []),
-            "notification_templates_success": org.get("notification_templates_started", []),
-            "notification_templates_error": org.get("notification_templates_started", [])
+            "notification_templates_started": parse_notification_templates((org.get("related") or {}).get("notification_templates_started")),
+            "notification_templates_success": parse_notification_templates((org.get("related") or {}).get("notification_templates_success")),
+            "notification_templates_error": parse_notification_templates((org.get("related") or {}).get("notification_templates_error")),
+            "notification_templates_approvals": parse_notification_templates((org.get("related") or {}).get("notification_templates_approvals"))
         }
         # Parse static credentials from export
         creds = org.get("related", {}).get("galaxy_credentials", [])
@@ -313,7 +317,21 @@ def format_organizations(data):
     return {"aap_organizations": orgs}
 
 def format_users(data):
-    return {"controller_users": data}
+    users = []
+
+    for user in data:
+        user_obj = {
+            "username": user.get("username"),
+            "password": user.get("password"),
+            "email": user.get("email"),
+            "first_name": user.get("first_name"),
+            "last_name": user.get("last_name"),
+            "is_superuser": user.get("is_superuser"),
+            "is_system_auditor": user.get("is_system_auditor")
+        }
+
+    users.append(user_obj)
+    return {"controller_users": users}
 
 def format_hosts(data):
     hosts_list = []
@@ -329,7 +347,9 @@ def format_hosts(data):
             vars_dict["some_var"] = "some_val"
             hosts_list.append({
                 "name": host_name,
+                "description": host.get("description"),
                 "inventory": inventory_name,
+                "enabled": host.get("enabled"),
                 "variables": vars_dict
             })
     return {"controller_hosts": hosts_list}
@@ -348,6 +368,7 @@ def format_groups(data):
             vars_dict["ansible_connection"] = "local"
             group_obj = {
                 "name": group_name,
+                "description": group.get("description"),
                 "inventory": inventory_name,
                 "variables": vars_dict
             }

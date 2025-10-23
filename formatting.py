@@ -30,8 +30,8 @@ elif resource_type == "inventory_sources":
     formatted = format_inventory_sources(data)
 elif resource_type == "organizations":
     formatted = format_organizations(data)
-# elif resource_type == "users":
-#     formatted = format_users(data)
+elif resource_type == "users":
+    formatted = format_users(data)
 elif resource_type == "hosts":
     formatted = format_hosts(data)
 elif resource_type == "groups":
