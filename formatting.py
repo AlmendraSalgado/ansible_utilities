@@ -22,8 +22,8 @@ elif resource_type == "inventories":
     formatted = format_inventories(data)
 elif resource_type == "credentials":
     formatted = format_credentials(data)
-# elif resource_type == "job_templates":
-#     formatted = format_job_templates(data)
+elif resource_type == "job_templates":
+    formatted = format_job_templates(data)
 elif resource_type == "execution_environments":
     formatted = format_execution_environments(data)
 elif resource_type == "inventory_sources":

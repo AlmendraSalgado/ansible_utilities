@@ -89,45 +89,102 @@ def format_schedules(data):
     for sched in data:
         sched_obj = {
             "name": sched.get("name"),
-            "description": sched.get("description"),
-            "unified_job_template": sched.get("unified_job_template"),
+            "description": sched.get("description", ""),
             "rrule": sched.get("rrule"),
-            "limit": sched.get("limit"),
-            "execution_environment": (sched.get("default_environment", "") or {}).get("name"),
-            "forks": sched.get("forks"),
-            "instance_groups": sched.get("instance_groups", {}),
-            "labels": sched.get("labels", {}),
-            "timeout": sched.get("instance_groups")
+            "extra_data": sched.get("extra_data") if "extra_data" in sched else None,
+            "inventory": (sched.get("inventory", {}) or {}).get("name") if isinstance(sched.get("inventory"), dict) else sched.get("inventory"),
+            "credentials": [],
+            "scm_branch": sched.get("scm_branch") if "scm_branch" in sched else None,
+            "execution_environment": ((sched.get("execution_environment") or {}).get("name")
+                                      if isinstance(sched.get("execution_environment"), dict)
+                                      else sched.get("execution_environment")),
+            "forks": sched.get("forks") if "forks" in sched else None,
+            "instance_groups": sched.get("instance_groups", []),
+            "job_slice_count": sched.get("job_slice_count") if "job_slice_count" in sched else None,
+            "labels": None,
+            "timeout": sched.get("timeout") if "timeout" in sched else None,
+            "job_type": sched.get("job_type") if "job_type" in sched else None,
+            "job_tags": sched.get("job_tags") if "job_tags" in sched else None,
+            "skip_tags": sched.get("skip_tags") if "skip_tags" in sched else None,
+            "limit": sched.get("limit") if "limit" in sched else None,
+            "diff_mode": sched.get("diff_mode") if "diff_mode" in sched else None,
+            "verbosity": sched.get("verbosity") if "verbosity" in sched else None,
+            "organization": (sched.get("organization", {}) or {}).get("name") if isinstance(sched.get("organization"), dict) else sched.get("organization"),
+            "unified_job_template": (sched.get("unified_job_template", {}) or {}).get("name"),
+            "enabled": sched.get("enabled") if "enabled" in sched else None,
         }
+
+        creds = sched.get("related", {}).get("credentials", [])
+        sched_obj["credentials"] = [c.get("name") for c in creds if c.get("name")]
+
         schedules.append(sched_obj)
     return {"controller_schedules": schedules}
 
 def format_job_templates(data):
     print("This function is not complet right now, so used with caution")
+
     templates_list = []
     for jt in data:
         jt_obj = {
             "name": jt.get("name"),
+            "copy_from": jt.get("copy_from") if "copy_from" in jt else None,
             "description": jt.get("description", ""),
+            "execution_environment": (jt.get("execution_environment", {}) or {}).get("name") if isinstance(jt.get("execution_environment"), dict) else jt.get("execution_environment"),
+            "custom_virtualenv": jt.get("custom_virtualenv") if "custom_virtualenv" in jt else None,
             "job_type": jt.get("job_type", "run"),
-            "inventory": jt.get("inventory"),
-            "project": jt.get("project"),
+            "inventory": (jt.get("inventory", {}) or {}).get("name") if isinstance(jt.get("inventory"), dict) else jt.get("inventory"),
+            "organization": jt.get("natural_key").get("organization").get("name"),
+            "project": (jt.get("project", {}) or {}).get("name") if isinstance(jt.get("project"), dict) else jt.get("project"),
             "playbook": jt.get("playbook"),
-            "verbosity": jt.get("verbosity", 0)
+            "forks": jt.get("forks") if "forks" in jt else None,
+            "limit": jt.get("limit") if "limit" in jt else None,
+            "verbosity": jt.get("verbosity", 0) if ("verbosity" in jt or True) else None,
+            "extra_vars": parse_vars(jt.get("extra_vars")) if isinstance(jt.get("extra_vars"), str) else jt.get("extra_vars", None),
+            "job_tags": jt.get("job_tags") if "job_tags" in jt else None,
+            "force_handlers": jt.get("force_handlers") if "force_handlers" in jt else None,
+            "skip_tags": jt.get("skip_tags") if "skip_tags" in jt else None,
+            "start_at_task": jt.get("start_at_task") if "start_at_task" in jt else None,
+            "diff_mode": jt.get("diff_mode") if "diff_mode" in jt else None,
+            "use_fact_cache": jt.get("use_fact_cache") if "use_fact_cache" in jt else None,
+            "host_config_key": jt.get("host_config_key") if "host_config_key" in jt else None,
+            "ask_scm_branch_on_launch": jt.get("ask_scm_branch_on_launch") if "ask_scm_branch_on_launch" in jt else None,
+            "ask_diff_mode_on_launch": jt.get("ask_diff_mode_on_launch") if "ask_diff_mode_on_launch" in jt else None,
+            "ask_variables_on_launch": jt.get("ask_variables_on_launch") if "ask_variables_on_launch" in jt else None,
+            "ask_limit_on_launch": jt.get("ask_limit_on_launch") if "ask_limit_on_launch" in jt else None,
+            "ask_tags_on_launch": jt.get("ask_tags") if "ask_tags" in jt or "ask_tags_on_launch" in jt else None,
+            "ask_skip_tags_on_launch": jt.get("ask_skip_tags") if "ask_skip_tags" in jt or "ask_skip_tags_on_launch" in jt else None,
+            "ask_job_type_on_launch": jt.get("ask_job_type_on_launch") if "ask_job_type_on_launch" in jt else None,
+            "ask_verbosity_on_launch": jt.get("ask_verbosity_on_launch") if "ask_verbosity_on_launch" in jt else None,
+            "ask_inventory_on_launch": jt.get("ask_inventory_on_launch") if "ask_inventory_on_launch" in jt else None,
+            "ask_credential_on_launch": jt.get("ask_credential_on_launch") if "ask_credential_on_launch" in jt else None,
+            "ask_execution_environment_on_launch": jt.get("ask_execution_environment_on_launch") if "ask_execution_environment_on_launch" in jt else None,
+            "ask_forks_on_launch": jt.get("ask_forks_on_launch") if "ask_forks_on_launch" in jt else None,
+            "ask_instance_groups_on_launch": jt.get("ask_instance_groups_on_launch") if "ask_instance_groups_on_launch" in jt else None,
+            "ask_job_slice_count_on_launch": jt.get("ask_job_slice_count_on_launch") if "ask_job_slice_count_on_launch" in jt else None,
+            "ask_labels_on_launch": jt.get("ask_labels_on_launch") if "ask_labels_on_launch" in jt else None,
+            "ask_timeout_on_launch": jt.get("ask_timeout_on_launch") if "ask_timeout_on_launch" in jt else None,
+            "prevent_instance_group_fallback": jt.get("prevent_instance_group_fallback") if "prevent_instance_group_fallback" in jt else None,
+            "survey_enabled": jt.get("survey_enabled") if "survey_enabled" in jt else None,
+            "become_enabled": jt.get("become_enabled") if "become_enabled" in jt else None,
+            "allow_simultaneous": jt.get("allow_simultaneous") if "allow_simultaneous" in jt else None,
+            "timeout": jt.get("timeout") if "timeout" in jt else None,
+            "instance_groups": jt.get("instance_groups", []),
+            "job_slice_count": jt.get("job_slice_count") if "job_slice_count" in jt else None,
+            "webhook_service": jt.get("webhook_service") if "webhook_service" in jt else None,
+            "webhook_credential": (jt.get("webhook_credential", {}) or {}).get("name") if isinstance(jt.get("webhook_credential"), dict) else jt.get("webhook_credential"),
+            "scm_branch": jt.get("scm_branch") if "scm_branch" in jt else None,
+            "labels": ((jt.get("related") or {}).get("labels")),
+            "state": jt.get("state") if "state" in jt else None,
+            "notification_templates_started": parse_notification_templates((jt.get("related") or {}).get("notification_templates_started")),
+            "notification_templates_success": parse_notification_templates((jt.get("related") or {}).get("notification_templates_success")),
+            "notification_templates_error": parse_notification_templates((jt.get("related") or {}).get("notification_templates_error")),
+            "survey_spec": (jt.get("related") or {}).get("survey_spec") or jt.get("survey_spec") or jt.get("survey")
         }
-        # Optional fields
-        if "state" in jt:
-            jt_obj["state"] = jt["state"]
-        if "credentials" in jt:
-            jt_obj["credentials"] = jt["credentials"]
-        if "execution_environment" in jt:
-            jt_obj["execution_environment"] = jt["execution_environment"]
-        if "extra_vars" in jt:
-            jt_obj["extra_vars"] = jt["extra_vars"]
-        if "webhook_service" in jt:
-            jt_obj["webhook_service"] = jt["webhook_service"]
-        if "webhook_credential" in jt:
-            jt_obj["webhook_credential"] = jt["webhook_credential"]
+
+        # credentials: prefer direct field, fallback to related.credentials, return only names
+        creds = jt.get("related", {}).get("credentials", [])
+        jt_obj["credentials"] = [c.get("name") for c in creds if c.get("name")]
+
         templates_list.append(jt_obj)
     return {"controller_templates": templates_list}
 
@@ -225,9 +282,9 @@ def format_inventory_sources(data):
             "update_on_launch": src.get("update_on_launch", True),
             "update_cache_timeout": src.get("update_cache_timeout", 0),
             "wait": src.get("wait", True),
-            "notification_templates_started": parse_notification_templates(src.get("notification_templates_started")),
-            "notification_templates_success": parse_notification_templates(src.get("notification_templates_started")),
-            "notification_templates_error": parse_notification_templates(src.get("notification_templates_started"))
+            "notification_templates_started": parse_notification_templates(src.get("related").get("notification_templates_started")),
+            "notification_templates_success": parse_notification_templates(src.get("related").get("notification_templates_success")),
+            "notification_templates_error": parse_notification_templates(src.get("related").get("notification_templates_error"))
         }
 
         formatted["controller_inventory_sources"].append(src_obj)
