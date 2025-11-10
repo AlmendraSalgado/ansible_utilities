@@ -3,7 +3,7 @@ collections:
 - name: ansible.posix
 - name: community.general
 - name: awx.awx
-- name: ansible.controller
+# - name: ansible.controller
 - name: asalgado.my_collection
 
 # roles:
