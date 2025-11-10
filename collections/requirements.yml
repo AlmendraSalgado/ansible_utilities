@@ -4,3 +4,9 @@ collections:
 - name: community.general
 - name: awx.awx
 - name: ansible.controller
+- name: asalgado.my_collection
+
+# roles:
+# - name: mycompany.myrole
+#   src: https://github.com/myorg/ansible-role-myrole.git
+#   version: main
