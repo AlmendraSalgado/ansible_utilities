@@ -5,8 +5,3 @@ collections:
 - name: awx.awx
 # - name: ansible.controller
 - name: asalgado.my_collection
-
-roles:
-- name: ansible_role_example2
-  src: https://github.com/AlmendraSalgado/ansible_role_example2.git
-  version: main

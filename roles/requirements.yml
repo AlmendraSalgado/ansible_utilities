@@ -1,0 +1,5 @@
+---
+roles:
+- name: ansible_role_example2
+  src: https://github.com/AlmendraSalgado/ansible_role_example2.git
+  version: main
