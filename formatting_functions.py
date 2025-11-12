@@ -10,6 +10,16 @@ def parse_notification_templates(data):
 
     return notif_list
 
+def parse_labels(data):
+    if not data:
+        return []
+    
+    label_list: list[str] = []
+    for label in data:
+        label_list.append(label.get("name"))
+
+    return label_list
+
 def parse_vars(variables):
     """Parse variables from string to dict if possible, else return as string."""
     if not variables or variables.strip() == "---":
@@ -143,44 +153,44 @@ def format_job_templates(data):
             "verbosity": jt.get("verbosity", 0) if ("verbosity" in jt or True) else None,
             "extra_vars": parse_vars(jt.get("extra_vars")) if isinstance(jt.get("extra_vars"), str) else jt.get("extra_vars", None),
             "job_tags": jt.get("job_tags") if "job_tags" in jt else None,
-            "force_handlers": jt.get("force_handlers") if "force_handlers" in jt else None,
+            "force_handlers": bool(jt.get("force_handlers") if "force_handlers" in jt else None),
             "skip_tags": jt.get("skip_tags") if "skip_tags" in jt else None,
             "start_at_task": jt.get("start_at_task") if "start_at_task" in jt else None,
-            "diff_mode": jt.get("diff_mode") if "diff_mode" in jt else None,
-            "use_fact_cache": jt.get("use_fact_cache") if "use_fact_cache" in jt else None,
+            "diff_mode": bool(jt.get("diff_mode") if "diff_mode" in jt else None),
+            "use_fact_cache": bool(jt.get("use_fact_cache") if "use_fact_cache" in jt else None),
             "host_config_key": jt.get("host_config_key") if "host_config_key" in jt else None,
-            "ask_scm_branch_on_launch": jt.get("ask_scm_branch_on_launch") if "ask_scm_branch_on_launch" in jt else None,
-            "ask_diff_mode_on_launch": jt.get("ask_diff_mode_on_launch") if "ask_diff_mode_on_launch" in jt else None,
-            "ask_variables_on_launch": jt.get("ask_variables_on_launch") if "ask_variables_on_launch" in jt else None,
-            "ask_limit_on_launch": jt.get("ask_limit_on_launch") if "ask_limit_on_launch" in jt else None,
-            "ask_tags_on_launch": jt.get("ask_tags") if "ask_tags" in jt or "ask_tags_on_launch" in jt else None,
-            "ask_skip_tags_on_launch": jt.get("ask_skip_tags") if "ask_skip_tags" in jt or "ask_skip_tags_on_launch" in jt else None,
-            "ask_job_type_on_launch": jt.get("ask_job_type_on_launch") if "ask_job_type_on_launch" in jt else None,
-            "ask_verbosity_on_launch": jt.get("ask_verbosity_on_launch") if "ask_verbosity_on_launch" in jt else None,
-            "ask_inventory_on_launch": jt.get("ask_inventory_on_launch") if "ask_inventory_on_launch" in jt else None,
-            "ask_credential_on_launch": jt.get("ask_credential_on_launch") if "ask_credential_on_launch" in jt else None,
-            "ask_execution_environment_on_launch": jt.get("ask_execution_environment_on_launch") if "ask_execution_environment_on_launch" in jt else None,
-            "ask_forks_on_launch": jt.get("ask_forks_on_launch") if "ask_forks_on_launch" in jt else None,
-            "ask_instance_groups_on_launch": jt.get("ask_instance_groups_on_launch") if "ask_instance_groups_on_launch" in jt else None,
-            "ask_job_slice_count_on_launch": jt.get("ask_job_slice_count_on_launch") if "ask_job_slice_count_on_launch" in jt else None,
-            "ask_labels_on_launch": jt.get("ask_labels_on_launch") if "ask_labels_on_launch" in jt else None,
-            "ask_timeout_on_launch": jt.get("ask_timeout_on_launch") if "ask_timeout_on_launch" in jt else None,
-            "prevent_instance_group_fallback": jt.get("prevent_instance_group_fallback") if "prevent_instance_group_fallback" in jt else None,
-            "survey_enabled": jt.get("survey_enabled") if "survey_enabled" in jt else None,
-            "become_enabled": jt.get("become_enabled") if "become_enabled" in jt else None,
-            "allow_simultaneous": jt.get("allow_simultaneous") if "allow_simultaneous" in jt else None,
+            "ask_scm_branch_on_launch": bool(jt.get("ask_scm_branch_on_launch") if "ask_scm_branch_on_launch" in jt else None),
+            "ask_diff_mode_on_launch": bool(jt.get("ask_diff_mode_on_launch") if "ask_diff_mode_on_launch" in jt else None),
+            "ask_variables_on_launch": bool(jt.get("ask_variables_on_launch") if "ask_variables_on_launch" in jt else None),
+            "ask_limit_on_launch": bool(jt.get("ask_limit_on_launch") if "ask_limit_on_launch" in jt else None),
+            "ask_tags_on_launch": bool(jt.get("ask_tags") if "ask_tags" in jt or "ask_tags_on_launch" in jt else None),
+            "ask_skip_tags_on_launch": bool(jt.get("ask_skip_tags") if "ask_skip_tags" in jt or "ask_skip_tags_on_launch" in jt else None),
+            "ask_job_type_on_launch": bool(jt.get("ask_job_type_on_launch") if "ask_job_type_on_launch" in jt else None),
+            "ask_verbosity_on_launch": bool(jt.get("ask_verbosity_on_launch") if "ask_verbosity_on_launch" in jt else None),
+            "ask_inventory_on_launch": bool(jt.get("ask_inventory_on_launch") if "ask_inventory_on_launch" in jt else None),
+            "ask_credential_on_launch": bool(jt.get("ask_credential_on_launch") if "ask_credential_on_launch" in jt else None),
+            "ask_execution_environment_on_launch": bool(jt.get("ask_execution_environment_on_launch") if "ask_execution_environment_on_launch" in jt else None),
+            "ask_forks_on_launch": bool(jt.get("ask_forks_on_launch") if "ask_forks_on_launch" in jt else None),
+            "ask_instance_groups_on_launch": bool(jt.get("ask_instance_groups_on_launch") if "ask_instance_groups_on_launch" in jt else None),
+            "ask_job_slice_count_on_launch": bool(jt.get("ask_job_slice_count_on_launch") if "ask_job_slice_count_on_launch" in jt else None),
+            "ask_labels_on_launch": bool(jt.get("ask_labels_on_launch") if "ask_labels_on_launch" in jt else None),
+            "ask_timeout_on_launch": bool(jt.get("ask_timeout_on_launch") if "ask_timeout_on_launch" in jt else None),
+            "prevent_instance_group_fallback": bool(jt.get("prevent_instance_group_fallback") if "prevent_instance_group_fallback" in jt else None),
+            "survey_enabled": bool(jt.get("survey_enabled") if "survey_enabled" in jt else None),
+            "become_enabled": bool(jt.get("become_enabled") if "become_enabled" in jt else None),
+            "allow_simultaneous": bool(jt.get("allow_simultaneous") if "allow_simultaneous" in jt else None),
             "timeout": jt.get("timeout") if "timeout" in jt else None,
             "instance_groups": jt.get("instance_groups", []),
             "job_slice_count": jt.get("job_slice_count") if "job_slice_count" in jt else None,
             "webhook_service": jt.get("webhook_service") if "webhook_service" in jt else None,
             "webhook_credential": (jt.get("webhook_credential", {}) or {}).get("name") if isinstance(jt.get("webhook_credential"), dict) else jt.get("webhook_credential"),
             "scm_branch": jt.get("scm_branch") if "scm_branch" in jt else None,
-            "labels": ((jt.get("related") or {}).get("labels")),
-            "state": jt.get("state") if "state" in jt else None,
+            "labels": parse_labels((jt.get("related") or {}).get("labels")),
+            "state": jt.get("state") if "state" in jt else "present",
             "notification_templates_started": parse_notification_templates((jt.get("related") or {}).get("notification_templates_started")),
             "notification_templates_success": parse_notification_templates((jt.get("related") or {}).get("notification_templates_success")),
             "notification_templates_error": parse_notification_templates((jt.get("related") or {}).get("notification_templates_error")),
-            "survey_spec": (jt.get("related") or {}).get("survey_spec") or jt.get("survey_spec") or jt.get("survey")
+            "survey_spec": (jt.get("related") or {}).get("survey_spec") or jt.get("survey_spec") or jt.get("survey") or {}
         }
 
         # credentials: prefer direct field, fallback to related.credentials, return only names
