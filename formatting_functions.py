@@ -96,6 +96,18 @@ def format_credentials(data):
         credentials.append(cred_obj)
     return {"controller_credentials": credentials}
 
+def format_credentials_input_sources(data):
+    cred_srcs = []
+    for cred_src in data:
+        cred_srcs.append({
+            "input_field_name": cred_src.get("input_field_name"),
+            "source_credential": cred_src.get("source_credential"),
+            "target_credential": cred_src.get("target_credential"),
+            "description": cred_src.get("description"),
+            "metadata": cred_src.get("metadata")
+        })
+    return {"controller_credential_input_sources": cred_srcs}
+
 def format_schedules(data):
     schedules = []
     for sched in data:
