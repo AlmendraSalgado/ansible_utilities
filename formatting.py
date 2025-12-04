@@ -6,7 +6,7 @@ from formatting_functions import *
 
 if len(sys.argv) != 4:
     print("Usage: python format_aap_export.py <resource_type> <input_file.yml> <output_file.yml>")
-    print("resource_type_plural: projects | inventories | credentials | credentials_input_sources | job_templates | execution_environments | inventory_sources | organizations | users | hosts | groups | schedules | credential_types | applications | teams | notifications")
+    print("resource_type_plural: workflow_job_templates | projects | inventories | credentials | credentials_input_sources | job_templates | execution_environments | inventory_sources | organizations | users | hosts | groups | schedules | credential_types | applications | teams | notifications")
     sys.exit(1)
 
 resource_type = sys.argv[1].lower()
@@ -48,8 +48,10 @@ elif resource_type == "teams":
     formatted = format_teams(data)
 elif resource_type == "notifications":
     formatted = format_notifications(data)
+elif resource_type == "workflow_job_templates":
+    formatted = format_workflow_job_templates(data)
 else:
-    print("Unsupported resource_type. Use: projects | inventories | credentials | credentials_input_sources | job_templates | execution_environments | inventory_sources | organizations | users | hosts | groups | schedules | credential_types | applications | teams | notifications")
+    print("Unsupported resource_type. Use: workflow_job_templates | projects | inventories | credentials | credentials_input_sources | job_templates | execution_environments | inventory_sources | organizations | users | hosts | groups | schedules | credential_types | applications | teams | notifications")
     sys.exit(1)
 
 # Ensure output directory exists

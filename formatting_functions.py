@@ -212,6 +212,137 @@ def format_job_templates(data):
         templates_list.append(jt_obj)
     return {"controller_templates": templates_list}
 
+def format_workflow_job_templates(data):
+    """Format workflow job templates from AAP export to controller configuration format."""
+    workflows = []
+    
+    for wf in data:
+        # Get organization name - handle None case
+        org_dict = wf.get("natural_key", {}).get("organization")
+        org_name = org_dict.get("name") if org_dict else "Default"
+        
+        # Base workflow object with all required fields
+        wf_obj = {
+            "name": wf.get("name"),
+            "description": wf.get("description", ""),
+            "extra_vars": parse_vars(wf.get("extra_vars")) if isinstance(wf.get("extra_vars"), str) else (wf.get("extra_vars") or {}),
+            "survey_enabled": wf.get("survey_enabled", False),
+            "allow_simultaneous": wf.get("allow_simultaneous", False),
+            "ask_variables_on_launch": wf.get("ask_variables_on_launch", False),
+            "ask_inventory_on_launch": wf.get("ask_inventory_on_launch", False),
+            "ask_scm_branch_on_launch": wf.get("ask_scm_branch_on_launch", False),
+            "ask_limit_on_launch": wf.get("ask_limit_on_launch", False),
+            "ask_labels_on_launch": wf.get("ask_labels_on_launch", False),
+            "ask_skip_tags_on_launch": wf.get("ask_skip_tags_on_launch", False),
+            "ask_tags_on_launch": wf.get("ask_tags_on_launch", False),
+            "inventory": (wf.get("inventory", {}) or {}).get("name") if isinstance(wf.get("inventory"), dict) else wf.get("inventory"),
+            "limit": wf.get("limit"),
+            "scm_branch": wf.get("scm_branch"),
+            "job_tags": wf.get("job_tags").split(",") if wf.get("job_tags") else [],
+            "skip_tags": wf.get("skip_tags").split(",") if wf.get("skip_tags") else [],
+            "organization": org_name,
+            "state": "present",
+            "labels": parse_labels((wf.get("related") or {}).get("labels")),
+            "notification_templates_started": parse_notification_templates((wf.get("related") or {}).get("notification_templates_started")),
+            "notification_templates_success": parse_notification_templates((wf.get("related") or {}).get("notification_templates_success")),
+            "notification_templates_error": parse_notification_templates((wf.get("related") or {}).get("notification_templates_error")),
+            "notification_templates_approvals": parse_notification_templates((wf.get("related") or {}).get("notification_templates_approvals")),
+            "survey_spec": (wf.get("related") or {}).get("survey_spec", {}),
+        }
+        
+        # Handle schedules - extract just names
+        schedules = (wf.get("related") or {}).get("schedules", [])
+        wf_obj["schedules"] = [s.get("name") for s in schedules if isinstance(s, dict) and s.get("name")] if schedules else []
+        
+        # Process workflow nodes to simplified format
+        workflow_nodes = (wf.get("related") or {}).get("workflow_nodes", [])
+        simplified_nodes = []
+        
+        for node in workflow_nodes:
+            simplified_node = {
+                "identifier": node.get("identifier"),
+                "all_parents_must_converge": node.get("all_parents_must_converge", False),
+            }
+            
+            # Get unified_job_template name
+            unified_jt = node.get("unified_job_template")
+            if unified_jt and isinstance(unified_jt, dict):
+                simplified_node["unified_job_template"] = unified_jt.get("name")
+            
+            # Handle approval template (no unified_job_template for approval nodes)
+            approval_template = (node.get("related") or {}).get("create_approval_template")
+            if approval_template:
+                simplified_node["approval_node"] = {
+                    "name": approval_template.get("name"),
+                    "description": approval_template.get("description", ""),
+                    "timeout": approval_template.get("timeout", 0)
+                }
+            
+            # Optional node-level overrides - only add if present
+            node_related = node.get("related", {})
+            
+            # Credentials
+            node_creds = node_related.get("credentials", [])
+            if node_creds:
+                simplified_node["credentials"] = [c.get("name") for c in node_creds if c.get("name")]
+            
+            # Instance groups
+            if node.get("instance_groups"):
+                simplified_node["instance_groups"] = node.get("instance_groups")
+            
+            # Node-level labels
+            node_labels = node_related.get("labels", [])
+            if node_labels:
+                simplified_node["labels"] = parse_labels(node_labels)
+            
+            # Node-level settings - only include if not None/empty
+            if node.get("limit"):
+                simplified_node["limit"] = node.get("limit")
+            if node.get("scm_branch"):
+                simplified_node["scm_branch"] = node.get("scm_branch")
+            if node.get("diff_mode") is not None:
+                simplified_node["diff_mode"] = node.get("diff_mode")
+            if node.get("job_type"):
+                simplified_node["job_type"] = node.get("job_type")
+            if node.get("job_tags"):
+                simplified_node["job_tags"] = node.get("job_tags").split(",") if isinstance(node.get("job_tags"), str) else node.get("job_tags")
+            if node.get("skip_tags"):
+                simplified_node["skip_tags"] = node.get("skip_tags").split(",") if isinstance(node.get("skip_tags"), str) else node.get("skip_tags")
+            if node.get("verbosity") is not None:
+                simplified_node["verbosity"] = node.get("verbosity")
+            if node.get("timeout"):
+                simplified_node["timeout"] = node.get("timeout")
+            if node.get("extra_data"):
+                simplified_node["extra_data"] = node.get("extra_data")
+            if node.get("inventory"):
+                simplified_node["inventory"] = (node.get("inventory") or {}).get("name") if isinstance(node.get("inventory"), dict) else node.get("inventory")
+            if node.get("execution_environment"):
+                simplified_node["execution_environment"] = (node.get("execution_environment") or {}).get("name") if isinstance(node.get("execution_environment"), dict) else node.get("execution_environment")
+            if node.get("forks"):
+                simplified_node["forks"] = node.get("forks")
+            if node.get("job_slice_count"):
+                simplified_node["job_slice_count"] = node.get("job_slice_count")
+            
+            # Extract success/failure/always node identifiers
+            success_nodes = node_related.get("success_nodes", [])
+            if success_nodes:
+                simplified_node["success_nodes"] = [n.get("identifier") for n in success_nodes if n.get("identifier")]
+            
+            failure_nodes = node_related.get("failure_nodes", [])
+            if failure_nodes:
+                simplified_node["failure_nodes"] = [n.get("identifier") for n in failure_nodes if n.get("identifier")]
+            
+            always_nodes = node_related.get("always_nodes", [])
+            if always_nodes:
+                simplified_node["always_nodes"] = [n.get("identifier") for n in always_nodes if n.get("identifier")]
+            
+            simplified_nodes.append(simplified_node)
+        
+        wf_obj["simplified_workflow_nodes"] = simplified_nodes
+        workflows.append(wf_obj)
+    
+    return {"controller_workflows": workflows}
+
 def format_credential_types(data):
     credential_types = []
     for cred_type in data:
